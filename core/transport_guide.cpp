@@ -48,9 +48,10 @@ int64_t TransportGuide::CalculateRouteLength(const std::vector<std::string> &rou
     return route_length;
 }
 
-TransportGuide::TransportGuide(Descriptions::Data data) {
+TransportGuide::TransportGuide(Descriptions::Data data, Transport::RoutingSettings settings) {
     Descriptions::DictStop stop_descriptions;
     Descriptions::DictBus bus_descriptions;
+
 
     for (auto &description: data) {
         if (std::holds_alternative<Descriptions::Stop>(description)) {
@@ -64,7 +65,7 @@ TransportGuide::TransportGuide(Descriptions::Data data) {
         }
     }
 
-    router_ = std::make_unique<TransportRouter>();
+    router_ = std::make_unique<Transport::TransportRouter>(stop_descriptions, bus_descriptions);
 
     for (const auto &[name, stop]: stop_descriptions) {
         stops_.emplace(name, Response::Stop{});
@@ -92,6 +93,8 @@ TransportGuide::TransportGuide(Descriptions::Data data) {
         );
     }
 
+    router_->BuildMap(stop_descriptions, bus_descriptions, settings);
+
 }
 
 std::optional<Response::Stop> TransportGuide::GetStop(const std::string &name) const {
@@ -106,4 +109,8 @@ std::optional<Response::Bus> TransportGuide::GetBus(const std::string &name) con
         return response->second;
     }
     return std::nullopt;
+}
+
+std::optional<Response::Route> TransportGuide::GetRoute(const std::string &from, const std::string &to) const {
+    return router_->GetRoute(from, to);
 }
