@@ -1,4 +1,4 @@
-add_library(core json.cpp descriptions.cpp request.cpp transport_router.cpp transport_guide.cpp)
+add_library(core svg.cpp json.cpp descriptions.cpp transport_router.cpp transport_render.cpp transport_guide.cpp request.cpp)
 
 target_include_directories(core
         INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}

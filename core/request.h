@@ -15,6 +15,8 @@ namespace Requests {
 
     Json::Node ProcessRoute(const TransportGuide &, const Json::Node &);
 
+    Json::Node ProcessMap(const TransportGuide &, const Json::Node &);
+
     Json::Node ProcessAll(const TransportGuide &, const Json::Node &);
 
 }

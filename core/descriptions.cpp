@@ -31,19 +31,19 @@ namespace Descriptions {
             stops.emplace_back(node.AsString());
         }
 
-        if (!base_map.at("is_roundtrip").AsBool()) {
+        bool is_roundtrip = base_map.at("is_roundtrip").AsBool();
+        if (!is_roundtrip) {
             int n_stops = stops.size();
-            stops.resize(2 * n_stops - 1);
-            auto lhs = stops.begin() + n_stops - 2;
-            auto rhs = stops.begin() + n_stops;
-            for (; rhs != stops.end(); ++rhs, --lhs) {
-                *rhs = *lhs;
+            stops.reserve(2 * n_stops - 1);
+            for (int i = n_stops - 2; i >= 0; --i) {
+                stops.emplace_back(stops[i]);
             }
         }
 
         return Bus{
                 .name = std::move(number),
                 .stops = std::move(stops),
+                .is_roundtrip = is_roundtrip
         };
     }
 

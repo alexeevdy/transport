@@ -1,5 +1,5 @@
 #include "transport_guide.h"
-
+#include "utils.h"
 
 double TransportGuide::CalculateDirectLength(const Descriptions::DictStop &stop_descriptions,
                                              const std::vector<std::string> &route_stops) {
@@ -48,41 +48,40 @@ int64_t TransportGuide::CalculateRouteLength(const std::vector<std::string> &rou
     return route_length;
 }
 
-TransportGuide::TransportGuide(Descriptions::Data data, Transport::RoutingSettings settings) {
-    Descriptions::DictStop stop_descriptions;
-    Descriptions::DictBus bus_descriptions;
-
+TransportGuide::TransportGuide(Descriptions::Data data, Transport::RoutingSettings routing_settings,
+                               Render::SettingsPtr render_settings) {
+    renderer_ = std::make_unique<Render::Renderer>(render_settings);
 
     for (auto &description: data) {
         if (std::holds_alternative<Descriptions::Stop>(description)) {
             auto &stop = std::get<Descriptions::Stop>(description);
-            stop_descriptions.emplace(stop.name, std::move(stop));
+            stop_descriptions_.emplace(stop.name, std::move(stop));
         } else if (std::holds_alternative<Descriptions::Bus>(description)) {
             auto &bus = std::get<Descriptions::Bus>(description);
-            bus_descriptions.emplace(bus.name, std::move(bus));
+            bus_descriptions_.emplace(bus.name, std::move(bus));
         } else {
             throw std::runtime_error("Unknown description variant");
         }
     }
 
-    router_ = std::make_unique<Transport::TransportRouter>(stop_descriptions, bus_descriptions);
+    router_ = std::make_unique<Transport::TransportRouter>(stop_descriptions_, bus_descriptions_);
 
-    for (const auto &[name, stop]: stop_descriptions) {
-        stops_.emplace(name, Response::Stop{});
+    for (const auto &[name, stop]: stop_descriptions_) {
+        stop_responses_.emplace(name, Response::Stop{});
         for (const auto &[name_to, distance]: stop.distance_to_stops) {
             router_->UpdateDistance(name, name_to, distance);
         }
     }
 
-    for (const auto &[name, bus]: bus_descriptions) {
+    for (const auto &[name, bus]: bus_descriptions_) {
         std::unordered_set<std::string> unique_stops;
         for (const auto &stop: bus.stops) {
             unique_stops.insert(stop);
-            stops_[stop].busses.insert(name);
+            stop_responses_[stop].busses.insert(name);
         }
         int64_t route_length = CalculateRouteLength(bus.stops);
-        double direct_length = CalculateDirectLength(stop_descriptions, bus.stops);
-        buses_.emplace(
+        double direct_length = CalculateDirectLength(stop_descriptions_, bus.stops);
+        bus_responses_.emplace(
                 name,
                 Response::Bus{
                         .stops_on_route = bus.stops.size(),
@@ -93,19 +92,19 @@ TransportGuide::TransportGuide(Descriptions::Data data, Transport::RoutingSettin
         );
     }
 
-    router_->BuildMap(stop_descriptions, bus_descriptions, settings);
+    router_->BuildMap(stop_descriptions_, bus_descriptions_, routing_settings);
 
 }
 
 std::optional<Response::Stop> TransportGuide::GetStop(const std::string &name) const {
-    if (auto response = stops_.find(name); response != stops_.end()) {
+    if (auto response = stop_responses_.find(name); response != stop_responses_.end()) {
         return response->second;
     }
     return std::nullopt;
 }
 
 std::optional<Response::Bus> TransportGuide::GetBus(const std::string &name) const {
-    if (auto response = buses_.find(name); response != buses_.end()) {
+    if (auto response = bus_responses_.find(name); response != bus_responses_.end()) {
         return response->second;
     }
     return std::nullopt;
@@ -113,4 +112,10 @@ std::optional<Response::Bus> TransportGuide::GetBus(const std::string &name) con
 
 std::optional<Response::Route> TransportGuide::GetRoute(const std::string &from, const std::string &to) const {
     return router_->GetRoute(from, to);
+}
+
+Response::Map TransportGuide::GetMap() const {
+    auto result = renderer_->RenderMap(stop_descriptions_, bus_descriptions_).data;
+    ReplaceAll(result, R"(")", R"(\")");
+    return {std::move(result)};
 }

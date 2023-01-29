@@ -68,6 +68,15 @@ namespace Requests {
         return Json::Node{std::move(response_map)};
     }
 
+
+    Json::Node ProcessMap(const TransportGuide &tg, const Json::Node &base_node) {
+        std::map<std::string, Json::Node> response_map;
+        response_map["map"] = tg.GetMap().data;
+        response_map["request_id"] = Json::Int(
+                static_cast<int64_t>(base_node.AsMap().at("id").AsDouble()));
+        return Json::Node{std::move(response_map)};
+    }
+
     Json::Node ProcessAll(const TransportGuide &tg, const Json::Node &base_node) {
         std::vector<Json::Node> responses;
         for (const auto &node: base_node.AsArray()) {
@@ -77,6 +86,8 @@ namespace Requests {
                 responses.emplace_back(ProcessBus(tg, node));
             } else if (type == "Route") {
                 responses.emplace_back(ProcessRoute(tg, node));
+            } else if (type == "Map") {
+                responses.emplace_back(ProcessMap(tg, node));
             } else {
                 throw std::runtime_error("Unknown request type: " + std::string(type));
             }

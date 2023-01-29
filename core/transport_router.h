@@ -1,41 +1,10 @@
 #include "descriptions.h"
 #include "router.h"
+#include "response.h"
 
 #include <set>
 #include <optional>
 #include <memory>
-
-namespace Response {
-
-    struct Stop {
-        std::set<std::string> busses;
-    };
-
-    struct Bus {
-        size_t stops_on_route;
-        size_t unique_stops;
-        int64_t route_length;
-        double curvature;
-    };
-
-    struct Route {
-
-        struct Wait {
-            std::string stop_name;
-            int64_t time;
-        };
-
-        struct Bus {
-            std::string bus;
-            int64_t span_count;
-            double time;
-        };
-
-        double total_time;
-        std::vector<std::variant<Wait, Bus>> items;
-
-    };
-}
 
 namespace Transport {
 
@@ -56,10 +25,7 @@ namespace Transport {
         }
 
         std::string GetName(size_t id) const {
-            if (id < names_.size()) {
-                return names_.at(id);
-            }
-            throw std::runtime_error("id out of bounds: " + std::to_string(id));
+            return names_.at(id);
         }
 
     private:

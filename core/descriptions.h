@@ -6,7 +6,7 @@
 #include <variant>
 #include <vector>
 #include <iostream>
-#include <unordered_map>
+#include <map>
 #include <utility>
 
 namespace Descriptions {
@@ -22,6 +22,7 @@ namespace Descriptions {
     struct Bus {
         std::string name;
         std::vector<std::string> stops;
+        bool is_roundtrip;
 
         static Bus ParseFrom(const Json::Node &);
     };
@@ -30,8 +31,8 @@ namespace Descriptions {
 
     Data ReadFrom(std::istream &in);
 
-    using DictStop = std::unordered_map<std::string, Stop>;
-    using DictBus = std::unordered_map<std::string, Bus>;
+    using DictStop = std::map<std::string, Stop>;
+    using DictBus = std::map<std::string, Bus>;
 
     Data ReadJson(const Json::Node &);
 
