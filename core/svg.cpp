@@ -73,13 +73,11 @@ namespace Svg {
         out << ">" << text_ << "</text>";
     }
 
-    void Document::Render(std::ostream &out) const {
-        out << R"(<?xml version="1.0" encoding="UTF-8" ?>)"
-            << R"(<svg xmlns="http://www.w3.org/2000/svg" version="1.1">)";
-        for (const auto &obj: objects_) {
-            obj->Render(out);
-        }
-        out << "</svg>";
+    void Rectangle::Render(std::ostream & out) const {
+        out << "<rect x=\"" << edge_.x << "\" y=\"" << edge_.y
+            << "\" width=\"" << width_ << "\" height=\"" << height_ << "\" ";
+        ListCommon(out);
+        out << "/>";
     }
 
 }

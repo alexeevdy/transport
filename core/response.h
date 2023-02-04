@@ -3,6 +3,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <optional>
 
 namespace Response {
 
@@ -17,6 +18,10 @@ namespace Response {
         double curvature;
     };
 
+    struct Map {
+        std::string data;
+    };
+
     struct Route {
 
         struct Wait {
@@ -28,14 +33,14 @@ namespace Response {
             std::string bus;
             int64_t span_count;
             double time;
+
+            using StopIt = std::vector<std::string>::const_iterator;
+            StopIt from, to;
         };
 
+        using RouteItems = std::vector<std::variant<Wait, Bus>>;
+        RouteItems items;
         double total_time;
-        std::vector<std::variant<Wait, Bus>> items;
-
-    };
-
-    struct Map {
-        std::string data;
+        Map map;
     };
 }

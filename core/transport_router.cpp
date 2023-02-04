@@ -36,13 +36,12 @@ namespace Transport {
         };
     }
 
-    void TransportRouter::BuildMap(const Descriptions::DictStop &stop_descriptions,
-                                   const Descriptions::DictBus &bus_descriptions,
+    void TransportRouter::BuildMap(Data::DataPtr database,
                                    RoutingSettings settings) {
         settings_ = settings;
-        graph_ = Graph::DirectedWeightedGraph<double>(stop_descriptions.size());
+        graph_ = Graph::DirectedWeightedGraph<double>(database->stop_descriptions.size());
         double bus_velocity_mpm = settings.bus_velocity * 100 / 6;
-        for (const auto &[bus_name, bus]: bus_descriptions) {
+        for (const auto &[bus_name, bus]: database->bus_descriptions) {
             size_t bus_id = buses_.GetId(bus_name);
             for (auto from = bus.stops.begin(); from != bus.stops.end(); ++from) {
                 double wait_time = settings.bus_wait_time;
@@ -57,6 +56,8 @@ namespace Transport {
                     edge_info_.emplace_back(EdgeInfo{
                             .bus_id = bus_id,
                             .span_count = span_count,
+                            .from = from,
+                            .to = to
                     });
                 }
             }
@@ -79,24 +80,26 @@ namespace Transport {
                         .bus = buses_.GetName(edge_info_[graph_edge_idx].bus_id),
                         .span_count = static_cast<int64_t>(
                                 edge_info_[graph_edge_idx].span_count),
-                        .time = graph_edge.weight - static_cast<double>(settings_.bus_wait_time)
+                        .time = graph_edge.weight - static_cast<double>(settings_.bus_wait_time),
+                        .from = edge_info_[graph_edge_idx].from,
+                        .to = edge_info_[graph_edge_idx].to,
                 });
             }
 
             return Response::Route{
+                    .items = std::move(route_items),
                     .total_time = route_info->weight,
-                    .items = std::move(route_items)
+                    .map = Response::Map{}
             };
         }
         return std::nullopt;
     }
 
-    TransportRouter::TransportRouter(const Descriptions::DictStop &stop_descriptions,
-                                     const Descriptions::DictBus &bus_descriptions) {
-        for (const auto &[stop_name, stop]: stop_descriptions) {
+    TransportRouter::TransportRouter(Data::DataPtr database) {
+        for (const auto &[stop_name, stop]: database->stop_descriptions) {
             stops_.SetId(stop_name);
         }
-        for (const auto &[bus_name, bus]: bus_descriptions) {
+        for (const auto &[bus_name, bus]: database->bus_descriptions) {
             buses_.SetId(bus_name);
         }
     }

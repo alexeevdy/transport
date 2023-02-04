@@ -7,6 +7,8 @@
 #include <vector>
 #include <iostream>
 #include <map>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 namespace Descriptions {
@@ -33,6 +35,21 @@ namespace Descriptions {
 
     using DictStop = std::map<std::string, Stop>;
     using DictBus = std::map<std::string, Bus>;
+
+    struct VectorEntry {
+        std::string_view stop;
+        std::string_view bus;
+        bool is_key_next_on_route;
+    };
+
+//    struct MyHash {
+//        size_t operator ()(VectorEntry obj) const {
+//            std::hash<std::string_view> hash_sv; // todo: outside
+//            return hash_sv(obj.stop) + hash_sv(obj.bus) + obj.is_key_next_on_route;
+//        }
+//    };
+
+    using AdjacentStops = std::unordered_map<std::string_view, std::vector<VectorEntry>>;
 
     Data ReadJson(const Json::Node &);
 

@@ -1,9 +1,10 @@
 #pragma once
 
+#include "descriptions.h"
+#include "database.h"
+#include "response.h"
 #include "json.h"
 #include "svg.h"
-#include "response.h"
-#include "descriptions.h"
 
 #include <utility>
 #include <unordered_map>
@@ -24,70 +25,124 @@ namespace Render {
         uint32_t bus_label_font_size;
         Svg::Point bus_label_offset;
         std::vector<std::string> layers;
+        double outer_margin;
     };
 
     using SettingsPtr = std::shared_ptr<Settings>;
 
-    SettingsPtr ReadJson(const Json::Node &);
-
-    struct RenderFactors {
-        double min_lat;
-        double min_lon;
-        double max_lat;
-        double max_lon;
-        double zoom_coef;
-    };
-
-    RenderFactors GetRenderFactors(const Descriptions::DictStop &stop_descriptions,
-                                   SettingsPtr render_settings);
-
     struct RenderData {
-        const Descriptions::DictStop &stop_descriptions;
-        const Descriptions::DictBus &bus_descriptions;
+        Data::DataPtr database;
         SettingsPtr render_settings;
     };
 
-    class RendererHelper {
-    public:
-        RendererHelper(RenderData render_data,
-                       Svg::DocumentPtr svg)
-                : render_data_(render_data),
-                  render_factors_(GetRenderFactors(
-                          render_data_.stop_descriptions, render_data_.render_settings)),
-                  svg_(svg) {}
+    inline bool IsFinishStop(Data::DataPtr database, std::string_view stop_name, std::string_view bus_name) {
+        const auto &bus = database->bus_descriptions.at(std::string(bus_name));
+        return stop_name == bus.stops.front()
+            || (!bus.is_roundtrip
+                && stop_name == bus.stops[bus.stops.size() / 2]);
+    }
 
-        void RenderMap();
+    class RenderDataOptimizer {
+    public:
+        explicit RenderDataOptimizer(RenderData render_data)
+                : render_data_(RenderData{
+                .database = std::make_shared<Data::Database>(*render_data.database),
+                .render_settings = render_data.render_settings
+        }) {}
+
+        RenderData Optimize();
 
     private:
         RenderData render_data_;
-        RenderFactors render_factors_;
-        Svg::DocumentPtr svg_;
 
-        Svg::Point GetPosition(Coordinates::Point) const;
+        bool IsMainStop(std::string_view stop_name, std::string_view bus_name);
+
+        void UniformStops();
+
+        void CompressCoordinates();
+
+        std::vector<int> EnumerateStops(
+                const std::vector<std::vector<Descriptions::Stop *>> &grouped, size_t size) const;
+
+    };
+
+    SettingsPtr ReadJson(const Json::Node &);
+
+    struct RouteByStops {
+        std::string stop_name;
+        std::string bus_name;
+        bool is_interchange;
+
+        RouteByStops(std::string stop, std::string bus, bool flag)
+                : stop_name(std::move(stop)), bus_name(std::move(bus)), is_interchange(flag) {}
+    };
+
+    class Renderer {
+    public:
+        Renderer() = default;
+
+        explicit Renderer(RenderData render_data);
+
+        Response::Map RenderMap();
+
+        Response::Map RenderRoute(const Response::Route::RouteItems &items) const;
+
+    private:
+        RenderData render_data_;
+        Svg::Document svg_;
+
+    private:
+
+        static Svg::Point GetPosition(Coordinates::Point);
 
         void RenderStopPoints();
+
+        static void RenderSingleStopLabel(
+                Svg::Document *svg, SettingsPtr render_settings,
+                const std::string &stop_name, Svg::Point position);
 
         void RenderStopLabels();
 
         void RenderBusLines();
 
-        void RenderSingleBusLabel(const std::string& bus_name, Svg::Point position, Svg::Color color);
+        static void RenderSingleBusLabel(
+                Svg::Document *svg, SettingsPtr render_settings,
+                const std::string &bus_name, Svg::Point position, Svg::Color color);
 
         void RenderBusLabels();
 
-        static const std::unordered_map<std::string, void (RendererHelper::*)()> kCallLayer;
-    };
-
-    class Renderer {
-    public:
-        explicit Renderer(SettingsPtr settings) :
-                render_settings_(std::move(settings)) {}
-
-        Response::Map RenderMap(const Descriptions::DictStop &,
-                                const Descriptions::DictBus &);
+        static const std::unordered_map<std::string, void (Renderer::*)()> kCallLayer;
 
     private:
-        SettingsPtr render_settings_;
+        class RouteHelper {
+        public:
+            RouteHelper(RenderData render_data,
+                        const Svg::Document &base_svg,
+                        const std::vector<RouteByStops> &route_scheme);
+
+            const Svg::Document &GetSvg() const {
+                return route_svg_;
+            }
+
+        private:
+            RenderData render_data_;
+            Svg::Document route_svg_;
+            const std::vector<RouteByStops> &route_scheme_;
+
+            void RenderRouteStopPoints();
+
+            void RenderRouteStopLabels();
+
+            void RenderRouteBusLines();
+
+            void RenderRouteBusLabels();
+
+            static const std::unordered_map<std::string,
+                    void (Renderer::RouteHelper::*)()> kCallRouteLayer;
+
+        };
+
+
     };
 
 }

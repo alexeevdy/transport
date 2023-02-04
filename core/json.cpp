@@ -101,13 +101,13 @@ namespace Json {
         return Document{LoadNode(input)};
     }
 
-    void Indent(std::ostream &out, int level) {
-        for (int i = 0; i < level; ++i) {
+    void Indent(std::ostream &out, size_t level) {
+        for (size_t i = 0; i < level; ++i) {
             out << "\t";
         }
     }
 
-    void PrintArray(std::ostream &out, const Node &root, int level) {
+    void PrintArray(std::ostream &out, const Node &root, size_t level) {
         out << "[";
         const auto &array = root.AsArray();
         if (!array.empty()) out << "\n";
@@ -127,7 +127,7 @@ namespace Json {
         out << "]";
     }
 
-    void PrintMap(std::ostream &out, const Node &root, int level) {
+    void PrintMap(std::ostream &out, const Node &root, size_t level) {
         out << "{";
         const auto &map = root.AsMap();
         if (!map.empty()) out << "\n";
@@ -148,7 +148,7 @@ namespace Json {
         out << "}";
     }
 
-    void Print(std::ostream &out, const Node &node, int level) {
+    void Print(std::ostream &out, const Node &node, size_t level) {
         if (std::holds_alternative<std::vector<Node>>(node)) {
             PrintArray(out, node, level);
         } else if (std::holds_alternative<std::map<std::string, Node>>(node)) {

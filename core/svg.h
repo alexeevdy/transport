@@ -197,9 +197,37 @@ namespace Svg {
         std::string text_;
     };
 
+    class Rectangle : public ObjectBase, public ObjectProps<Rectangle> {
+    public:
+        Rectangle(double x, double y, double width, double height)
+            : edge_(x, y), width_(width), height_(height) {}
+
+        void Render(std::ostream &) const override;
+
+        Rectangle &SetEdge(Point point) {
+            edge_ = point;
+            return *this;
+        }
+
+        Rectangle &SetSize(double width, double height) {
+            width_ = width;
+            height_ = height;
+            return *this;
+        }
+
+    private:
+        Point edge_;
+        double width_;
+        double height_;
+    };
+
     class Document {
     public:
         Document() = default;
+
+        // no deep copy needed;
+        Document(const Document& other)
+            : objects_(other.objects_) {}
 
         template<class DerivedObject>
         Document &Add(DerivedObject obj) {
@@ -207,7 +235,14 @@ namespace Svg {
             return *this;
         }
 
-        void Render(std::ostream &) const;
+        void Render(std::ostream &out) const {
+            out << R"(<?xml version="1.0" encoding="UTF-8" ?>)"
+                << R"(<svg xmlns="http://www.w3.org/2000/svg" version="1.1">)";
+            for (const auto &obj: objects_) {
+                obj->Render(out);
+            }
+            out << "</svg>";
+        }
 
         void Clear() {
             objects_.clear();

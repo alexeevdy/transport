@@ -1,7 +1,7 @@
 #pragma once
 
-#include "transport_router.h"
 #include "transport_render.h"
+#include "transport_router.h"
 
 #include <utility>
 #include <memory>
@@ -28,8 +28,7 @@ private:
     int64_t CalculateRouteLength(const std::vector<std::string> &route_stops) const;
 
 private:
-    Descriptions::DictStop stop_descriptions_;
-    Descriptions::DictBus bus_descriptions_;
+    Data::DataPtr database_;
     std::unordered_map<std::string, Response::Stop> stop_responses_;
     std::unordered_map<std::string, Response::Bus> bus_responses_;
     std::unique_ptr<Transport::TransportRouter> router_;

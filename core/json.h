@@ -67,6 +67,6 @@ namespace Json {
 
     Document Load(std::istream &input);
 
-    void Print(std::ostream &out, const Node &node, int level = 0);
+    void Print(std::ostream &out, const Node &node, size_t level = 0);
 
 }

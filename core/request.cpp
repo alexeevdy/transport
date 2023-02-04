@@ -41,6 +41,7 @@ namespace Requests {
                                         base_node.AsMap().at("to").AsString())) {
             std::vector<Json::Node> items_array;
             response_map["total_time"] = response->total_time;
+            response_map["map"] = response->map.data;
             for (const auto &item: response->items) {
                 std::map<std::string, Json::Node> item_map;
                 if (std::holds_alternative<Response::Route::Wait>(item)) {

@@ -1,6 +1,6 @@
-#include "descriptions.h"
 #include "router.h"
-#include "response.h"
+#include "transport_render.h"
+
 
 #include <set>
 #include <optional>
@@ -40,15 +40,13 @@ namespace Transport {
 
     class TransportRouter {
     public:
-        TransportRouter(const Descriptions::DictStop &,
-                        const Descriptions::DictBus &);
+        explicit TransportRouter(Data::DataPtr);
 
         void UpdateDistance(const std::string &from, const std::string &to, int distance);
 
         int GetDistance(const std::string &from, const std::string &to) const;
 
-        void BuildMap(const Descriptions::DictStop &,
-                      const Descriptions::DictBus &,
+        void BuildMap(Data::DataPtr,
                       RoutingSettings settings);
 
         std::optional<Response::Route> GetRoute(const std::string &from, const std::string &to) const;
@@ -59,6 +57,7 @@ namespace Transport {
         struct EdgeInfo {
             size_t bus_id;
             size_t span_count;
+            Response::Route::Bus::StopIt from, to;
         };
 
     private:
