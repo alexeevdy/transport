@@ -20,3 +20,4 @@ Queries to the database are given at `"stat_requests"` key. There are several ty
 .svg object displaying the resulting route is also rendered (see examples);
 
 ##### Examples
+See the `svg` directory for .svg rendered files, _view raw_ for full image; otherwise look for .png files inside the `pics` directory. _raw_ - stops are mapped onto plane acording to thier geographical coordinates. _optimized_ - we give up geographical accuracy to achieve a better-looking image; stops are uniformly distributed across the plane, and some coordinates are compressed into one.
