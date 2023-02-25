@@ -8,7 +8,7 @@ Class `TransportGuide` manages the database, constructed with an input-json quer
 "base_requests"` key, which includes two types of objects:
 * `"type": "Stop"` defines a bus stop - name, geographical coordinates (longitude, latitude) and 
 relative road distances to nearby stops;
-* `"type": "Bus` defines a bus route - type and a sequence of stops;
+* `"type": "Bus` defines a bus route - its type and a sequence of stops;
 
 ##### Queries
 
