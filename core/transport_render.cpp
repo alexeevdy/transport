@@ -396,9 +396,7 @@ namespace Render {
         const auto &route_svg = render_helper.GetSvg();
         std::ostringstream os;
         route_svg.Render(os);
-        auto result = os.str();
-        ReplaceAll(result, R"(")", R"(\")");
-        return {result};
+        return {os.str()};
     }
 
     Renderer::RouteHelper::RouteHelper(RenderData render_data,
