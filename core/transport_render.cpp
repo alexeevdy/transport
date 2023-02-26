@@ -363,9 +363,7 @@ namespace Render {
     Response::Map Renderer::RenderMap() {
         std::ostringstream os;
         svg_.Render(os);
-        auto result = os.str();
-        ReplaceAll(result, R"(")", R"(\")");
-        return {result};
+        return {os.str()};
     }
 
     std::vector<RouteByStops> TraverseRoute(const Response::Route::RouteItems &items) {
