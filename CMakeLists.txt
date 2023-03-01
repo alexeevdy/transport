@@ -15,5 +15,4 @@ add_executable(main main.cpp)
 
 target_link_libraries(main PUBLIC core)
 target_include_directories(main PUBLIC
-        "${PROJECT_SOURCE_DIR}/profiler"
-        "${PROJECT_SOURCE_DIR}/utestlib")
+        "${PROJECT_SOURCE_DIR}/test")

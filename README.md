@@ -1,3 +1,5 @@
+## Transport Guide
+
 ##### About
 
 Application to manage urban transport system database and answer related queries;
@@ -20,4 +22,4 @@ Queries to the database are given at `"stat_requests"` key. There are several ty
 .svg object displaying the resulting route is also rendered (see examples);
 
 ##### Examples
-See the `svg` directory for .svg rendered files, _view raw_ for the full image; otherwise, look for .png files inside the `png` directory. _raw_ - stops are mapped onto the plane acсording to their geographical coordinates. _optimized_ - we give up geographical accuracy to achieve a better-looking image; stops are uniformly distributed across the plane, and some coordinates are compressed into one.
+See the `/test/svg` directory for .svg rendered files (_view raw_ for the full image); otherwise, look into `/test/png` directory, containing converted _.png_ images. _raw_ - stops are mapped onto the plane acсording to their geographical coordinates. _optimized_ - we give up geographical accuracy to achieve a better-looking image; stops are uniformly distributed across the plane, and some coordinates are compressed into one.
