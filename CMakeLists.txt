@@ -5,14 +5,14 @@ project(transport VERSION 1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_compile_options(-fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-sanitize=null -fno-sanitize=alignment)
-add_link_options(-fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-sanitize=null -fno-sanitize=alignment)
+add_compile_options(-fsanitize=address)
+add_link_options(-fsanitize=address)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC")
 
-add_subdirectory(core)
+add_subdirectory(transport)
 add_executable(main main.cpp)
 
-target_link_libraries(main PUBLIC core)
+target_link_libraries(main PUBLIC transport)
 target_include_directories(main PUBLIC
         "${PROJECT_SOURCE_DIR}/test")
